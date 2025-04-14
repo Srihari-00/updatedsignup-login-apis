@@ -2,45 +2,50 @@ from fastapi import FastAPI, Depends
 from . import auth
 from .database import engine
 from .models import Base
-from .schemas import SignupRequest, LoginRequest, ChangePasswordRequest, VerifyOtpSignupRequest
+from app import schemas
+from app.schemas import SignupRequest, LoginRequest, ChangePasswordRequest, VerifyOtpSignupRequest
 from .auth import get_db
 from sqlalchemy.orm import Session
-
+from . import crud, utils
 app = FastAPI()
 Base.metadata.create_all(bind=engine)
 
 
+# signup route
 @app.post("/signup")
 def signup(request: SignupRequest, db: Session = Depends(get_db)):
     return auth.signup_user(request, db)
+
+# Verify signup OTP
 
 
 @app.post("/verify-signup-otp")
 def verify_signup_otp(request: VerifyOtpSignupRequest, db: Session = Depends(get_db)):
     return auth.verify_signup_otp(request, db)
 
+# Resend Signup OTP
+
 
 @app.post("/resend-signup-otp")
 def resend_signup_otp(email: str, db: Session = Depends(get_db)):
-    otp = auth.utils.generate_otp()
-    auth.utils.store_otp(email, otp)
-    auth.utils.send_email_otp(email, otp)
-    return auth.utils.custom_response(
-        response="OTP resent",
-        response_code=200,
-        response_message="OTP resent to email for verification",
-        data={}
-    )
+    return auth.resend_signup_otp(email, db)
+# Login route
 
 
 @app.post("/login")
 def login(request: LoginRequest, db: Session = Depends(get_db)):
     return auth.login_user(request, db)
 
+# Verify Login OTP
 
-@app.post("/verify-login-otp")  # Placeholder if needed later
-def verify_login_otp(email: str, otp: str, db: Session = Depends(get_db)):
-    return {"message": "This endpoint can be implemented similarly"}
+# Verify Login OTP endpoint
+
+
+@app.post("/verify-login-otp")
+def verify_login_otp(request: schemas.VerifyLoginOtpRequest, db: Session = Depends(get_db)):
+    # Now `request` will automatically contain the email and otp fields
+    return auth.verify_login_otp(request, db)
+# change Password
 
 
 @app.post("/change-password")

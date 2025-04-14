@@ -30,6 +30,8 @@ def is_strong_password(password: str) -> bool:
         return False
     if not re.search(r"[a-z]", password):
         return False
+    if not re.search(r"[0-9]", password):
+        return False
     if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
         return False
     return True
