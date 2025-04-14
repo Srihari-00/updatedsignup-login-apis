@@ -1,22 +1,40 @@
-# app/crud.py
-
 from sqlalchemy.orm import Session
-from .models import User
+from . import models, utils
+import datetime
 
 
-# ✅ Fetch user by email (email is case-insensitive)
 def get_user_by_email(db: Session, email: str):
-    return db.query(User).filter(User.email == email.lower()).first()
+    return db.query(models.User).filter(models.User.email == email).first()
 
 
-# ✅ Create a new user with lowercase email
-def create_user(db: Session, username: str, email: str, hashed_password: str):
-    user = User(
-        username=username,
-        email=email.lower(),
-        password=hashed_password
-    )
-    db.add(user)
+def create_user(db: Session, username: str, email: str, password: str):
+    hashed_password = utils.get_password_hash(password)
+    new_user = models.User(username=username, email=email,
+                           password=hashed_password)
+    db.add(new_user)
     db.commit()
-    db.refresh(user)
-    return user
+    db.refresh(new_user)
+    return new_user
+
+
+def create_otp(db: Session, email: str, otp: str, purpose: str):
+    new_otp = models.OTP(email=email, otp=otp, purpose=purpose)
+    db.add(new_otp)
+    db.commit()
+
+
+def verify_otp(db: Session, email: str, otp: str, purpose: str):
+    stored_otp = db.query(models.OTP).filter_by(
+        email=email, purpose=purpose).order_by(models.OTP.created_at.desc()).first()
+    if stored_otp and stored_otp.otp == otp and (datetime.datetime.utcnow() - stored_otp.created_at).seconds < 600:
+        return True
+    return False
+
+
+def change_user_password(db: Session, user_id: int, new_password: str):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if user:
+        user.password = utils.get_password_hash(new_password)
+        db.commit()
+        return True
+    return False

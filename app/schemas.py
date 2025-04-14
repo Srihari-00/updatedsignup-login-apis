@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
+from typing import Optional, Union, Dict, Any
 
 
 class SignupRequest(BaseModel):
@@ -31,4 +32,16 @@ class StandardResponse(BaseModel):
     response: str
     response_code: int
     response_message: str
-    data: UserResponse | None = None
+    data: Optional[Union[UserResponse, Dict[str, Any]]] = None
+
+
+class VerifyOtpSignupRequest(BaseModel):
+    username: str = Field(..., min_length=3, max_length=50)
+    email: EmailStr
+    password: str
+    otp: str
+
+
+class VerifyLoginOtpRequest(BaseModel):
+    email: EmailStr
+    otp: str
