@@ -53,8 +53,8 @@ def send_email_otp(email: str, otp: str):
     EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
     msg = EmailMessage()
-    msg.set_content(f"Your OTP is: {otp}")
-    msg["Subject"] = "Your OTP Verification"
+    msg.set_content(f"Your OTP for verification is: {otp}")
+    msg["Subject"] = "Your OTP Verification Code - Testing RR"
     msg["From"] = EMAIL_ADDRESS
     msg["To"] = email
 

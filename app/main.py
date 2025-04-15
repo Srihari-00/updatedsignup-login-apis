@@ -36,18 +36,15 @@ def resend_signup_otp(email: str, db: Session = Depends(get_db)):
 def login(request: LoginRequest, db: Session = Depends(get_db)):
     return auth.login_user(request, db)
 
-# Verify Login OTP
 
 # Verify Login OTP endpoint
-
-
 @app.post("/verify-login-otp")
 def verify_login_otp(request: schemas.VerifyLoginOtpRequest, db: Session = Depends(get_db)):
     # Now `request` will automatically contain the email and otp fields
     return auth.verify_login_otp(request, db)
+
+
 # change Password
-
-
 @app.post("/change-password")
 def change_password(request: ChangePasswordRequest, db: Session = Depends(get_db)):
     return auth.change_password(request, db)
