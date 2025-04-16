@@ -186,6 +186,8 @@ def resend_signup_otp(email: str, db: Session = Depends(get_db)):
         data={}
     )
 
+# ===================Forgot/Reset Password======================
+
 
 def reset_password(request: schemas.ResetPasswordRequest, db: Session):
     normalized_email = utils.normalize_email(request.email)
@@ -218,6 +220,8 @@ def reset_password(request: schemas.ResetPasswordRequest, db: Session):
         response_message="OTP sent to your email. Please verify to reset password.",
         data={"email": normalized_email}
     )
+
+# ===================Verify Reset Password OTP======================
 
 
 def verify_reset_password_otp(request: schemas.VerifyResetPasswordOTPRequest, db: Session):
