@@ -45,3 +45,14 @@ class VerifyOtpSignupRequest(BaseModel):
 class VerifyLoginOtpRequest(BaseModel):
     email: EmailStr
     otp: str
+
+
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class VerifyResetPasswordOTPRequest(BaseModel):
+    email: EmailStr
+    otp: str
+    new_password: str
+    confirm_password: str

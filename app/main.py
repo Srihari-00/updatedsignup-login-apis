@@ -48,3 +48,13 @@ def verify_login_otp(request: schemas.VerifyLoginOtpRequest, db: Session = Depen
 @app.post("/change-password")
 def change_password(request: ChangePasswordRequest, db: Session = Depends(get_db)):
     return auth.change_password(request, db)
+
+
+@app.post("/reset-password")
+def reset_password(request: schemas.ResetPasswordRequest, db: Session = Depends(get_db)):
+    return auth.reset_password(request, db)
+
+
+@app.post("/verify-reset-password-otp")
+def verify_reset_password_otp(request: schemas.VerifyResetPasswordOTPRequest, db: Session = Depends(get_db)):
+    return auth.verify_reset_password_otp(request, db)

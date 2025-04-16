@@ -185,3 +185,89 @@ def resend_signup_otp(email: str, db: Session = Depends(get_db)):
         response_message="OTP resent to email for verification",
         data={}
     )
+
+
+def reset_password(request: schemas.ResetPasswordRequest, db: Session):
+    normalized_email = utils.normalize_email(request.email)
+
+    if not utils.is_valid_email(normalized_email):
+        return utils.custom_response(
+            response="error",
+            response_code=400,
+            response_message="Invalid email format.",
+            data={}
+        )
+
+    existing_user = crud.get_user_by_email(db, normalized_email)
+    if not existing_user:
+        return utils.custom_response(
+            response="error",
+            response_code=404,
+            response_message="User not registered with this email.",
+            data={}
+        )
+
+    # Generate and send OTP
+    otp = utils.generate_otp()
+    utils.store_otp(normalized_email, otp)
+    utils.send_email_otp(normalized_email, otp)
+
+    return utils.custom_response(
+        response="success",
+        response_code=200,
+        response_message="OTP sent to your email. Please verify to reset password.",
+        data={"email": normalized_email}
+    )
+
+
+def verify_reset_password_otp(request: schemas.VerifyResetPasswordOTPRequest, db: Session):
+    normalized_email = utils.normalize_email(request.email)
+
+    if not utils.verify_otp(normalized_email, request.otp):
+        return utils.custom_response(
+            response="error",
+            response_code=400,
+            response_message="Invalid or expired OTP.",
+            data={}
+        )
+
+    if request.new_password != request.confirm_password:
+        return utils.custom_response(
+            response="error",
+            response_code=400,
+            response_message="Passwords do not match.",
+            data={}
+        )
+
+    if not utils.is_strong_password(request.new_password):
+        return utils.custom_response(
+            response="error",
+            response_code=400,
+            response_message="Password is not strong enough. It must be 8-15 characters long with uppercase, lowercase, digit, and special character.",
+            data={}
+        )
+
+    existing_user = crud.get_user_by_email(db, normalized_email)
+    if not existing_user:
+        return utils.custom_response(
+            response="error",
+            response_code=404,
+            response_message="User not found.",
+            data={}
+        )
+
+    hashed_password = utils.get_password_hash(request.new_password)
+    existing_user.password = hashed_password
+    db.commit()
+    db.refresh(existing_user)
+
+    return utils.custom_response(
+        response="success",
+        response_code=200,
+        response_message="Password has been reset successfully.",
+        data={
+            "user_id": existing_user.id,
+            "username": existing_user.username,
+            "user_email": existing_user.email
+        }
+    )
